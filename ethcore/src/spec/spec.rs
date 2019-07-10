@@ -151,6 +151,8 @@ pub struct CommonParams {
 	pub transaction_permission_contract_transition: BlockNumber,
 	/// Maximum size of transaction's RLP payload
 	pub max_transaction_size: usize,
+	/// Number of first block where EIP-2028 rules begin.
+	pub eip2028_transition: BlockNumber,
 }
 
 impl CommonParams {
@@ -208,6 +210,9 @@ impl CommonParams {
 				wasm.have_gasleft = true;
 			}
 			schedule.wasm = Some(wasm);
+		}
+		if block_number >= self.eip2028_transition {
+			schedule.tx_data_non_zero_gas = 16;
 		}
 	}
 
@@ -334,6 +339,10 @@ impl From<ethjson::spec::Params> for CommonParams {
 			kip6_transition: p.kip6_transition.map_or_else(
 				BlockNumber::max_value,
 				Into::into
+			),
+			eip2028_transition: p.eip2028_transition.map_or_else(
+				BlockNumber::max_value,
+				Into::into,
 			),
 		}
 	}
